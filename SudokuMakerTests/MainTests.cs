@@ -17,23 +17,27 @@ namespace SudokuMakerTests {
     public class MainTests {
         [Test]
         public void LoadDll() {
-            var board = new byte[SudokuMaker.NumCells] {
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-                
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-                0, 0, 0,   0, 0, 0,   0, 0, 0,
-            };
-
-            var isBoardValid = SudokuMaker.IsBoardValid(board);
+            var isBoardValid = SudokuMaker.IsBoardValid(Boards.EmptyBoard);
         }
-        
+
+        [Test]
+        [TestCase("EmptyBoard", true)]
+        [TestCase("Puzzle1", true)]
+        [TestCase("Solution1", true)]
+        [TestCase("NotSolution1_WrongPuzzle", true)]
+        [TestCase("Puzzle2", true)]
+        [TestCase("Solution2", true)]
+        [TestCase("Incorrect_DuplicateColumn1", false)]
+        [TestCase("Incorrect_DuplicateColumn2", false)]
+        [TestCase("Incorrect_DuplicateRow1", false)]
+        [TestCase("Incorrect_DuplicateRow2", false)]
+        [TestCase("Incorrect_DuplicateSegment1", false)]
+        [TestCase("Incorrect_DuplicateSegment2", false)]
+        public void IsBoardValid(string boardName, bool expected) {
+            var board = Boards.LoadBoard(boardName);
+            var isBoardValid = SudokuMaker.IsBoardValid(Boards.EmptyBoard);
+            Assert.AreEqual(expected, isBoardValid);
+        }
 
     }
 }
