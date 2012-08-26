@@ -1,0 +1,42 @@
+// SudokuMaker.cpp : Defines the exported functions for the DLL application.
+//
+
+#include "stdafx.h"
+#include "SudokuMaker.h"
+
+namespace sudoku_maker {
+
+    // Check whether a solution is valid.
+    bool BoardIsValid(const SudokuCell* puzzle) {
+        return true;
+    }
+
+    // Assign a difficulty level to a sudoku puzzle.
+    SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, Difficulty& difficulty) {
+        return SOLUTION_OK;
+    }
+
+    // Check whether a solution is a valid solution to the puzzle.
+    bool IsSolution(const SudokuCell* puzzle, const SudokuCell* solution) {
+        return true;
+    }
+
+    // Make a single sudoku puzzle.
+    // Argument "puzzle" must contain at least 81 char-sized elements.
+    void MakeSudoku(SudokuCell* puzzle) {
+    }
+
+    // Solve a sudoku puzzle.
+    // Returns true if a solution is found, false otherwise.
+    SolutionOutcome Solve(const SudokuCell* puzzle, SudokuCell* solution) {
+        return SOLUTION_OK;
+    }
+
+    // Solve a puzzle with a strategy up to a certain difficulty.
+    // Returns true if a solution is found, false otherwise.
+    SolutionOutcome SolveWithStrategy(const SudokuCell* puzzle, Difficulty maxDifficulty) {
+        return SOLUTION_OK;
+    }
+
+}
+
