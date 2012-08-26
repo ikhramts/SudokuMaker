@@ -1,9 +1,8 @@
-LIBRARY SudokuMaker.dll
+LIBRARY
 EXPORTS
-	BoardIsValid
 	FindPuzzleDifficulty
+	IsBoardValid
 	IsSolution
 	MakeSudoku
 	Solve
 	SolveWithStrategy
-

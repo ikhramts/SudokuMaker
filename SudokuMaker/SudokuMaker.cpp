@@ -6,14 +6,14 @@
 
 namespace sudoku_maker {
 
-    // Check whether a solution is valid.
-    bool BoardIsValid(const SudokuCell* puzzle) {
-        return true;
-    }
-
     // Assign a difficulty level to a sudoku puzzle.
     SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, Difficulty& difficulty) {
         return SOLUTION_OK;
+    }
+
+    // Check whether a solution is valid.
+    bool IsBoardValid(const SudokuCell* puzzle) {
+        return true;
     }
 
     // Check whether a solution is a valid solution to the puzzle.

@@ -40,11 +40,11 @@ namespace sudoku_maker {
         
     
 extern "C" {
-    // Check whether a solution is valid.
-    bool BoardIsValid(const SudokuCell* puzzle);
-
     // Assign a difficulty level to a sudoku puzzle.
     SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, Difficulty& difficulty);
+
+    // Check whether a solution is valid.
+    bool IsBoardValid(const SudokuCell* puzzle);
 
     // Check whether a solution is a valid solution to the puzzle.
     bool IsSolution(const SudokuCell* puzzle, const SudokuCell* solution);
