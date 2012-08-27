@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "SudokuMaker.h"
+#include "Puzzle.h"
 
 namespace sudoku_maker {
 
@@ -12,8 +13,9 @@ namespace sudoku_maker {
     }
 
     // Check whether a solution is valid.
-    bool IsBoardValid(const SudokuCell* puzzle) {
-        return true;
+    bool IsBoardValid(const SudokuCell* board) {
+        Puzzle puzzle(board);
+        return puzzle.IsValid();
     }
 
     // Check whether a solution is a valid solution to the puzzle.

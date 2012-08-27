@@ -35,7 +35,7 @@ namespace SudokuMakerTests {
         [TestCase("Incorrect_DuplicateSegment2", false)]
         public void IsBoardValid(string boardName, bool expected) {
             var board = Boards.LoadBoard(boardName);
-            var isBoardValid = SudokuMaker.IsBoardValid(Boards.EmptyBoard);
+            var isBoardValid = SudokuMaker.IsBoardValid(board);
             Assert.AreEqual(expected, isBoardValid);
         }
 
