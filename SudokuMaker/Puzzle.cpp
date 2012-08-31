@@ -47,7 +47,7 @@ bool Cell::UpdateSolvedState() {
     USHORT position = 1;
 
     for (int i = 1; i <= kNumNumbers; i++) {
-        if (Raw & position > 0) {
+        if ((Raw & position) > 0) {
             if (foundPencilMark) {
                 // More than one pencil mark.  Not solved.
                 Raw &= ~kSolvedFlag;
