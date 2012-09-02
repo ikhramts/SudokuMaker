@@ -16,9 +16,11 @@ namespace SudokuMakerTests {
         public const int NumCells = 81;
 
         [DllImport("SudokuMaker.dll")]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool IsBoardValid(byte[] board);
 
         [DllImport("SudokuMaker.dll")]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool IsSolution(byte[] puzzle, byte[] solution);
 
         [DllImport("SudokuMaker.dll")]

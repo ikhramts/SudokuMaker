@@ -3,7 +3,7 @@
 #include <vector>
 #include <windows.h>
 
-#include "SolutionOutcome.h"
+#include "SolverConstants.h"
 
 // Define the main export symbol.
 #ifndef SUDOKU_MAKER_API
@@ -23,19 +23,9 @@ namespace sudoku_maker {
     // Constants.
     unsigned short kSudokuNumCells = 81; 
     
-    enum Difficulty {
-        ELIMINATION = 1,
-        HIDDEN_SINGLE = 2,         // Only possible place in a row/column.
-        ELIMINATE_LINE = 4,
-        HIDDEN_DOUBLES = 8,
-        HIDDEN_TRIPLES = 16,
-        X_WING = 32,
-        BRUTE_FORCE = 64
-    };
-
 extern "C" {
     // Assign a difficulty level to a sudoku puzzle.
-    SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, Difficulty& difficulty);
+    SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, SolutionStrategy& difficulty);
 
     // Check whether a solution is valid.
     bool IsBoardValid(const SudokuCell* puzzle);
@@ -53,7 +43,7 @@ extern "C" {
 
     // Solve a puzzle with a strategy up to a certain difficulty.
     // Returns true if a solution is found, false otherwise.
-    SolutionOutcome SolveWithStrategy(const SudokuCell* puzzle, Difficulty maxDifficulty);
+    SolutionOutcome SolveWithStrategy(const SudokuCell* puzzle, SolutionStrategy maxDifficulty);
 
 }
 }

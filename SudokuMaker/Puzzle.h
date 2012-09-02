@@ -1,9 +1,13 @@
 #pragma once
 #include "stdafx.h"
+#include <memory>
+#include <deque>
 
-#include "SolutionOutcome.h"
+#include "SolverConstants.h"
 
 namespace sudoku_maker {
+    class Puzzle;
+    typedef std::shared_ptr<Puzzle> PuzzlePtr;
 
 /***************************************\
 *                Cell                   *
@@ -36,6 +40,7 @@ public:
     //=============== Methods ===============//
     void Erase(int number);
     void ErasePencilMark(unsigned short pencilMark);
+    bool HasPencilMark(unsigned short pencilMark) const;
     bool IsPenciledIn(int number) const;
     bool IsSolved() const;
     void PencilIn(int number);
@@ -74,11 +79,16 @@ public:
     //=============== Constructors ===============//
     Puzzle();
     Puzzle(const UCHAR* board);
+    Puzzle(const Puzzle& other);
+    Puzzle(Puzzle&& other);
 
     //=============== Methods ===============//
-    void EliminateImpossiblePencilMarks();
 
-    void EliminateImpossibleMarksForSolvedCell();
+    // Remove pencil marks that conflict with
+    // solved cells.
+    // @returns false if found conflicts, true if
+    //          there were no conflicts.
+    bool EliminateImpossiblePencilMarks();
 
     void Load(const UCHAR* board);
 	
@@ -87,13 +97,15 @@ public:
 	//  * solved cells in other match solved cells in this puzzle,
 	//  * this puzzle has no empty cells.
 	bool IsSolutionFor(const Puzzle& other) const;
+
+    bool IsSolved() const;
     
 	// Check whether a board is valid.
 	// A board is valid if among all solved cells there are
 	// no duplicate numbers in rows, columns and 3x3 segments.
 	bool IsValid() const;
 
-    SolutionOutcome Solve();
+    Puzzle& operator= (const Puzzle& other);
 
     void ToByteArray(BYTE* byteArray) const;
 
@@ -102,5 +114,15 @@ public:
 
 private:
     bool CheckForDuplicate(USHORT& foundNumbers, const Cell& cell) const;
+
+    // Remove pencil marks at location "position" that conflict with
+    // a solved value at "sourcePosition".  If the cell at "position"
+    // is solved, add it to the solvedQueue.
+    // @returns true if the process was completed successfully, false
+    //          if a conflict was found.
+    bool EliminateConflictsAtCell(int position, 
+                                  int sourcePosition, 
+                                  unsigned short value, 
+                                  std::deque<int>& solvedQueue);
 };
 }

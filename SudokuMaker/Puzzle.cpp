@@ -32,6 +32,10 @@ void Cell::ErasePencilMark(unsigned short pencilMark) {
     UpdateSolvedState();
 }
 
+bool Cell::HasPencilMark(unsigned short pencilMark) const {
+    return (Raw & pencilMark) != 0;
+}
+
 bool Cell::IsPenciledIn(int number) const {
     return (this->Raw & (1 << (number - 1))) != 0;
 }
@@ -52,6 +56,11 @@ void Cell::PencilInAll() {
 
 unsigned short Cell::PencilMarks() const {
     return this->Raw & kNumbers;
+}
+
+Cell& Cell::operator= (const Cell& other) {
+    Raw = other.Raw;
+    return *this;
 }
 
 bool Cell::operator== (const Cell& other) const {
@@ -131,7 +140,19 @@ Puzzle::Puzzle(const UCHAR* board) {
     this->Load(board);
 }
 
-void Puzzle::EliminateImpossiblePencilMarks() {
+Puzzle::Puzzle(const Puzzle& other) {
+    for (int i = 0; i < kNumCells; i++) {
+        Cells[i] = other.Cells[i];
+    }
+}
+
+Puzzle::Puzzle(Puzzle&& other) {
+    for (int i = 0; i < kNumCells; i++) {
+        Cells[i] = other.Cells[i];
+    }
+}
+
+bool Puzzle::EliminateImpossiblePencilMarks() {
     // For each solved cell, eliminate the cell's value
     // in each row, column and 3x3 segment.
     std::deque<int> solvedCells;
@@ -149,7 +170,7 @@ void Puzzle::EliminateImpossiblePencilMarks() {
         int cellPosition = solvedCells.front();
         solvedCells.pop_front();
 
-        if (cellPosition == 11) {
+        if (cellPosition == 72) {
             int x = 2;
         }
 
@@ -161,12 +182,11 @@ void Puzzle::EliminateImpossiblePencilMarks() {
         auto rowEnd = rowStart + kNumNumbers;
 
         for (int position = rowStart; position < rowEnd; position++) {
-            if (position != cellPosition && !Cells[position].IsSolved()) {
-                Cells[position].ErasePencilMark(value);
+            auto couldEliminate = 
+                EliminateConflictsAtCell(position, cellPosition, value, solvedCells);
 
-                if (Cells[position].IsSolved()) {
-                    solvedCells.push_back(position);
-                }
+            if (!couldEliminate) {
+                return false;
             }
         }
         
@@ -174,17 +194,16 @@ void Puzzle::EliminateImpossiblePencilMarks() {
         auto columnStart = cellPosition % kNumNumbers;
 
         for (int position = columnStart; position < kNumCells; position += kNumNumbers) {
-            if (position != cellPosition && !Cells[position].IsSolved()) {
-                Cells[position].ErasePencilMark(value);
+            auto couldEliminate = 
+                EliminateConflictsAtCell(position, cellPosition, value, solvedCells);
 
-                if (Cells[position].IsSolved()) {
-                    solvedCells.push_back(position);
-                }
+            if (!couldEliminate) {
+                return false;
             }
         }
 
         // Eliminate the value in all other cells in the 3x3 segment.
-        auto topRow = cellPosition / (kNumCells * kSegmentWidth) * kSegmentWidth;
+        auto topRow = cellPosition / (kNumNumbers * kSegmentWidth) * kSegmentWidth;
         auto leftColumn = ((cellPosition % kNumNumbers) / kSegmentWidth)
                             * kSegmentWidth;
 
@@ -193,17 +212,17 @@ void Puzzle::EliminateImpossiblePencilMarks() {
 
             for (int column = 0; column < kSegmentWidth; column++) {
                 auto position = offset + column;
+                auto couldEliminate = 
+                    EliminateConflictsAtCell(position, cellPosition, value, solvedCells);
 
-                if (position != cellPosition && !Cells[position].IsSolved()) {
-                    Cells[position].ErasePencilMark(value);
-
-                    if (Cells[position].IsSolved()) {
-                        solvedCells.push_back(position);
-                    }
+                if (!couldEliminate) {
+                    return false;
                 }
             }
         }
     }
+
+    return true;
 }
 
 void Puzzle::Load(const UCHAR* board) {
@@ -213,15 +232,8 @@ void Puzzle::Load(const UCHAR* board) {
 }
 
 bool Puzzle::IsSolutionFor(const Puzzle& other) const {
-    if (!this->IsValid()) {
+    if (!this->IsSolved()) {
         return false;
-    }
-
-    // Check whether this puzzle has unsolved cells.
-    for (auto& cell : Cells) {
-        if (!cell.IsSolved()) {
-            return false;
-        }
     }
 
     // Check whether solved cells in the other puzzle match
@@ -231,6 +243,21 @@ bool Puzzle::IsSolutionFor(const Puzzle& other) const {
         auto& cell = Cells[i];
 
         if (otherCell.IsSolved() && (otherCell != cell)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Puzzle::IsSolved() const {
+    if (!this->IsValid()) {
+        return false;
+    }
+
+    // Check whether this puzzle has unsolved cells.
+    for (auto& cell : Cells) {
+        if (!cell.IsSolved()) {
             return false;
         }
     }
@@ -289,14 +316,12 @@ bool Puzzle::IsValid() const {
     return true;
 }
 
-SolutionOutcome Puzzle::Solve() {
-    if (!IsValid()) {
-        return SOLUTION_INVALID_PUZZLE;
+Puzzle& Puzzle::operator= (const Puzzle& other) {
+    for (int i = 0; i < kNumCells; i++) {
+        Cells[i] = other.Cells[i];
     }
 
-    EliminateImpossiblePencilMarks();
-
-    return SOLUTION_OK;
+    return *this;
 }
 
 // Returns: true if found a duplicate; false otherwise.
@@ -320,6 +345,34 @@ bool Puzzle::CheckForDuplicate(USHORT& foundNumbers, const Cell& cell) const {
     }
 
     return false;
+}
+
+bool Puzzle::EliminateConflictsAtCell(int position, 
+                                      int sourcePosition, 
+                                      unsigned short value, 
+                                      std::deque<int>& solvedQueue) {
+    
+    if (position != sourcePosition) {
+        Cell& targetCell = Cells[position];
+
+        if (!targetCell.IsSolved()) {
+            // Remove the pencil mark.
+            targetCell.ErasePencilMark(value);
+
+            if (targetCell.IsSolved()) {
+                solvedQueue.push_back(position);
+            }
+                
+        } else {
+            // Check for a conflict.
+            if (targetCell.HasPencilMark(value)) {
+                // Found a conflict.
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 

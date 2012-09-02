@@ -4,18 +4,20 @@
 #include "stdafx.h"
 #include "SudokuMaker.h"
 #include "Puzzle.h"
+#include "Solvers.h"
 
 namespace sudoku_maker {
 
     // Assign a difficulty level to a sudoku puzzle.
-    SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, Difficulty& difficulty) {
+    SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, SolutionStrategy& difficulty) {
         return SOLUTION_OK;
     }
 
     // Check whether a solution is valid.
     bool IsBoardValid(const SudokuCell* board) {
         Puzzle puzzle(board);
-        return puzzle.IsValid();
+        bool isValid = puzzle.IsValid();
+        return isValid;
     }
 
     // Check whether a solution is a valid solution to the puzzle.
@@ -33,19 +35,21 @@ namespace sudoku_maker {
     // Solve a sudoku puzzle.
     // Returns true if a solution is found, false otherwise.
     SolutionOutcome Solve(const SudokuCell* puzzle, SudokuCell* solution) {
-        Puzzle puzzleBoard(puzzle);
-        auto solutionResult = puzzleBoard.Solve();
+        PuzzlePtr puzzleBoard(new Puzzle(puzzle));
+        auto solutionBoard = SolveBruteForce(puzzleBoard);
 
-        if (solutionResult == SOLUTION_OK) {
-            puzzleBoard.ToByteArray(solution);
+        if (solutionBoard.get() != nullptr) {
+            solutionBoard->ToByteArray(solution);
+            return SOLUTION_OK;
+        
+        } else {
+            return SOLUTION_INVALID_PUZZLE;
         }
-
-        return solutionResult;
     }
 
     // Solve a puzzle with a strategy up to a certain difficulty.
     // Returns true if a solution is found, false otherwise.
-    SolutionOutcome SolveWithStrategy(const SudokuCell* puzzle, Difficulty maxDifficulty) {
+    SolutionOutcome SolveWithStrategy(const SudokuCell* puzzle, SolutionStrategy maxDifficulty) {
         return SOLUTION_OK;
     }
 
