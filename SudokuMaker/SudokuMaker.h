@@ -3,6 +3,8 @@
 #include <vector>
 #include <windows.h>
 
+#include "SolutionOutcome.h"
+
 // Define the main export symbol.
 #ifndef SUDOKU_MAKER_API
     #ifdef SUDOKUMAKER_EXPORTS
@@ -11,9 +13,6 @@
         #define SUDOKUMAKER_API __declspec(dllimport)
     #endif
 #endif
-
-
-
 
 namespace sudoku_maker {
     // Useful typedefs.
@@ -34,11 +33,6 @@ namespace sudoku_maker {
         BRUTE_FORCE = 64
     };
 
-    enum SolutionOutcome {
-        SOLUTION_OK, SOLUTION_CANNOT_SOLVE, SOLUTION_INVALID_PUZZLE
-    };
-        
-    
 extern "C" {
     // Assign a difficulty level to a sudoku puzzle.
     SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, Difficulty& difficulty);

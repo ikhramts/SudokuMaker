@@ -1,26 +1,29 @@
 #pragma once
 #include "stdafx.h"
 
+#include "SolutionOutcome.h"
+
 namespace sudoku_maker {
+
 /***************************************\
 *                Cell                   *
 \***************************************/
 class Cell {
 public:
     //=============== Constants ===============//
-    const static int kPositionOf1 = 1;
-    const static int kPositionOf2 = 2;
-    const static int kPositionOf3 = 4;
-    const static int kPositionOf4 = 8;
-    const static int kPositionOf5 = 16;
-    const static int kPositionOf6 = 32;
-    const static int kPositionOf7 = 64;
-    const static int kPositionOf8 = 128;
-    const static int kPositionOf9 = 256;
+    const static unsigned short kPositionOf1 = 1;
+    const static unsigned short kPositionOf2 = 2;
+    const static unsigned short kPositionOf3 = 4;
+    const static unsigned short kPositionOf4 = 8;
+    const static unsigned short kPositionOf5 = 16;
+    const static unsigned short kPositionOf6 = 32;
+    const static unsigned short kPositionOf7 = 64;
+    const static unsigned short kPositionOf8 = 128;
+    const static unsigned short kPositionOf9 = 256;
 
-    const static int kNumbers = 1023;
+    const static unsigned short kNumbers = 511;
         
-    const static int kSolvedFlag = 1024;
+    const static unsigned short kSolvedFlag = 512;
 
     const static int kNumNumbers = 9;
 
@@ -32,10 +35,12 @@ public:
         
     //=============== Methods ===============//
     void Erase(int number);
+    void ErasePencilMark(unsigned short pencilMark);
     bool IsPenciledIn(int number) const;
     bool IsSolved() const;
     void PencilIn(int number);
     void PencilInAll();
+    unsigned short PencilMarks() const;
 
     void SetValue(int number);
 
@@ -46,7 +51,8 @@ public:
     
     UCHAR Value() const;
         
-    bool operator== (const Cell& other);
+    bool operator== (const Cell& other) const;
+    bool operator!= (const Cell& other) const;
     Cell& operator= (const Cell& other);
 
     //=============== Fields ===============//
@@ -70,8 +76,26 @@ public:
     Puzzle(const UCHAR* board);
 
     //=============== Methods ===============//
+    void EliminateImpossiblePencilMarks();
+
+    void EliminateImpossibleMarksForSolvedCell();
+
     void Load(const UCHAR* board);
-    bool IsValid() const;
+	
+	// This puzzle is a solution for other puzzle iff
+	//  * this board is valid,
+	//  * solved cells in other match solved cells in this puzzle,
+	//  * this puzzle has no empty cells.
+	bool IsSolutionFor(const Puzzle& other) const;
+    
+	// Check whether a board is valid.
+	// A board is valid if among all solved cells there are
+	// no duplicate numbers in rows, columns and 3x3 segments.
+	bool IsValid() const;
+
+    SolutionOutcome Solve();
+
+    void ToByteArray(BYTE* byteArray) const;
 
     //=============== Fields ===============//
     std::array<Cell, kNumCells> Cells;

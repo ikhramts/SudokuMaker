@@ -1,6 +1,8 @@
 #include "stdafx.h"
-#include "Puzzle.h"
 #include <bitset>
+#include <deque>
+
+#include "Puzzle.h"
 
 namespace sudoku_maker {
 /***************************************\
@@ -19,13 +21,19 @@ Cell::Cell(const Cell& other) {
 }
 
 void Cell::Erase(int number) {
-    this->Raw &= ~(1 << number);
+    this->Raw &= ~(1 << (number - 1));
     UpdateSolvedState();
 
 }
 
+void Cell::ErasePencilMark(unsigned short pencilMark) {
+    unsigned short mask = (~pencilMark) | (~kNumbers);
+    this->Raw &= mask;
+    UpdateSolvedState();
+}
+
 bool Cell::IsPenciledIn(int number) const {
-    return (this->Raw & (1 << number)) != 0;
+    return (this->Raw & (1 << (number - 1))) != 0;
 }
 
 bool Cell::IsSolved() const {
@@ -40,6 +48,18 @@ void Cell::PencilIn(int number) {
 void Cell::PencilInAll() {
     this->Raw = kNumbers;
     this->Raw &= ~kSolvedFlag;
+}
+
+unsigned short Cell::PencilMarks() const {
+    return this->Raw & kNumbers;
+}
+
+bool Cell::operator== (const Cell& other) const {
+    return other.Raw == this->Raw;
+}
+
+bool Cell::operator!= (const Cell& other) const {
+    return other.Raw != this->Raw;
 }
 
 bool Cell::UpdateSolvedState() {
@@ -57,6 +77,8 @@ bool Cell::UpdateSolvedState() {
                 foundPencilMark = true;
             }
         }
+
+        position = position << 1;
     }
 
     if (foundPencilMark) {
@@ -89,7 +111,7 @@ UCHAR Cell::Value() const {
 
     for (int i = 0; i < kNumNumbers; i++) {
        if ((this->Raw & position) != 0) {
-           return i;
+           return i + 1;
        }
 
        position = position << 1;
@@ -101,6 +123,7 @@ UCHAR Cell::Value() const {
 /***************************************\
 *                Puzzle                 *
 \***************************************/
+//****************** Public Functions *******************//
 Puzzle::Puzzle() {
 }
 
@@ -108,10 +131,111 @@ Puzzle::Puzzle(const UCHAR* board) {
     this->Load(board);
 }
 
+void Puzzle::EliminateImpossiblePencilMarks() {
+    // For each solved cell, eliminate the cell's value
+    // in each row, column and 3x3 segment.
+    std::deque<int> solvedCells;
+    
+    // Start with the cells that are currently solved.
+    // Cells that will be solved while eliminating pencil marks
+    // will be added later.
+    for (int i = 0; i < kNumCells; i++) {
+        if (Cells[i].IsSolved()) {
+            solvedCells.push_back(i);
+        }
+    }
+
+    while (!solvedCells.empty()) {
+        int cellPosition = solvedCells.front();
+        solvedCells.pop_front();
+
+        if (cellPosition == 11) {
+            int x = 2;
+        }
+
+        auto solvedCell = Cells[cellPosition];
+        auto value = solvedCell.PencilMarks();
+
+        // Eliminate the value in all other cells in the row.
+        auto rowStart = (cellPosition / kNumNumbers) * kNumNumbers;
+        auto rowEnd = rowStart + kNumNumbers;
+
+        for (int position = rowStart; position < rowEnd; position++) {
+            if (position != cellPosition && !Cells[position].IsSolved()) {
+                Cells[position].ErasePencilMark(value);
+
+                if (Cells[position].IsSolved()) {
+                    solvedCells.push_back(position);
+                }
+            }
+        }
+        
+        // Eliminate the value in all other cells in the column.
+        auto columnStart = cellPosition % kNumNumbers;
+
+        for (int position = columnStart; position < kNumCells; position += kNumNumbers) {
+            if (position != cellPosition && !Cells[position].IsSolved()) {
+                Cells[position].ErasePencilMark(value);
+
+                if (Cells[position].IsSolved()) {
+                    solvedCells.push_back(position);
+                }
+            }
+        }
+
+        // Eliminate the value in all other cells in the 3x3 segment.
+        auto topRow = cellPosition / (kNumCells * kSegmentWidth) * kSegmentWidth;
+        auto leftColumn = ((cellPosition % kNumNumbers) / kSegmentWidth)
+                            * kSegmentWidth;
+
+        for (int row = 0; row < kSegmentWidth; row++) {
+            auto offset = (row + topRow) * kNumNumbers + leftColumn;
+
+            for (int column = 0; column < kSegmentWidth; column++) {
+                auto position = offset + column;
+
+                if (position != cellPosition && !Cells[position].IsSolved()) {
+                    Cells[position].ErasePencilMark(value);
+
+                    if (Cells[position].IsSolved()) {
+                        solvedCells.push_back(position);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Puzzle::Load(const UCHAR* board) {
     for (int i = 0; i < kNumCells; i++) {
         Cells[i].SetValue(board[i]);
     }
+}
+
+bool Puzzle::IsSolutionFor(const Puzzle& other) const {
+    if (!this->IsValid()) {
+        return false;
+    }
+
+    // Check whether this puzzle has unsolved cells.
+    for (auto& cell : Cells) {
+        if (!cell.IsSolved()) {
+            return false;
+        }
+    }
+
+    // Check whether solved cells in the other puzzle match
+    // cells in this puzzle.
+    for (int i = 0; i < kNumCells; i++) {
+        auto& otherCell = other.Cells[i];
+        auto& cell = Cells[i];
+
+        if (otherCell.IsSolved() && (otherCell != cell)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool Puzzle::IsValid() const {
@@ -124,7 +248,6 @@ bool Puzzle::IsValid() const {
 
         for (int column = 0; column < kNumNumbers; column++) {
             if(CheckForDuplicate(foundNumbers, Cells[rowOffset + column])) {
-                OutputDebugString(L"Found Duplicate in rows");
                 return false;
             }
         }
@@ -137,7 +260,6 @@ bool Puzzle::IsValid() const {
         for (int row = 0; row < kNumNumbers; row++) {
             int position = row * kNumNumbers + column;
             if(CheckForDuplicate(foundNumbers, Cells[position])) {
-                OutputDebugString(L"Found Duplicate in columns");
                 return false;
             }
         }
@@ -157,7 +279,6 @@ bool Puzzle::IsValid() const {
                     int position = rowOffset + outerColumn * kSegmentWidth + innerColumn;
 
                     if (CheckForDuplicate(foundNumbers, Cells[position])) {
-                        OutputDebugString(L"Found Duplicate in segments");
                         return false;
                     }
                 }
@@ -168,7 +289,24 @@ bool Puzzle::IsValid() const {
     return true;
 }
 
+SolutionOutcome Puzzle::Solve() {
+    if (!IsValid()) {
+        return SOLUTION_INVALID_PUZZLE;
+    }
+
+    EliminateImpossiblePencilMarks();
+
+    return SOLUTION_OK;
+}
+
 // Returns: true if found a duplicate; false otherwise.
+void Puzzle::ToByteArray(BYTE* byteArray) const {
+    for (int i = 0; i < kNumCells; i++) {
+        byteArray[i] = Cells[i].Value();
+    }
+}
+
+//****************** Private Functions *******************//
 bool Puzzle::CheckForDuplicate(USHORT& foundNumbers, const Cell& cell) const {
     if (cell.IsSolved()) {
         if ((foundNumbers & Cell::kNumbers & cell.Raw) != 0) {
@@ -183,5 +321,6 @@ bool Puzzle::CheckForDuplicate(USHORT& foundNumbers, const Cell& cell) const {
 
     return false;
 }
+
 
 }

@@ -117,6 +117,20 @@ namespace SudokuMakerTests {
             7, 8, 2,   4, 0, 0,   0, 0, 6,
         };
 
+        public static readonly byte[] Puzzle1_AlmostSolved = new byte[SudokuMaker.NumCells] {
+            3, 7, 8,   2, 6, 4,   9, 5, 1,
+            5, 0, 9,   1, 3, 7,   2, 4, 8,
+            2, 4, 1,   9, 5, 8,   6, 7, 3,
+
+            6, 3, 5,   8, 2, 9,   7, 1, 4,
+            8, 2, 4,   7, 0, 5,   3, 6, 9,
+            9, 1, 7,   3, 4, 6,   8, 2, 5,
+            
+            1, 9, 6,   5, 7, 3,   4, 8, 2,
+            4, 5, 3,   6, 8, 2,   1, 9, 7,
+            7, 8, 2,   4, 9, 1,   5, 0, 6,
+        };
+
         public static readonly byte[] Solution1 = new byte[SudokuMaker.NumCells] {
             3, 7, 8,   2, 6, 4,   9, 5, 1,
             5, 6, 9,   1, 3, 7,   2, 4, 8,
@@ -217,8 +231,13 @@ namespace SudokuMakerTests {
 
         public static byte[] LoadBoard(string boardName) {
             var boardField = typeof(Boards).GetField(boardName);
-            var board = (byte[]) boardField.GetValue(null);
-            return board;
+
+            if (boardField == null) {
+                return null;
+            } else {
+                var board = (byte[])boardField.GetValue(null);
+                return board;
+            }
         }
     }
 }

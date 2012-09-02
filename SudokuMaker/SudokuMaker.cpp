@@ -20,7 +20,9 @@ namespace sudoku_maker {
 
     // Check whether a solution is a valid solution to the puzzle.
     bool IsSolution(const SudokuCell* puzzle, const SudokuCell* solution) {
-        return true;
+        Puzzle puzzleBoard(puzzle);
+        Puzzle solutionBoard(solution);
+        return solutionBoard.IsSolutionFor(puzzleBoard);
     }
 
     // Make a single sudoku puzzle.
@@ -31,7 +33,14 @@ namespace sudoku_maker {
     // Solve a sudoku puzzle.
     // Returns true if a solution is found, false otherwise.
     SolutionOutcome Solve(const SudokuCell* puzzle, SudokuCell* solution) {
-        return SOLUTION_OK;
+        Puzzle puzzleBoard(puzzle);
+        auto solutionResult = puzzleBoard.Solve();
+
+        if (solutionResult == SOLUTION_OK) {
+            puzzleBoard.ToByteArray(solution);
+        }
+
+        return solutionResult;
     }
 
     // Solve a puzzle with a strategy up to a certain difficulty.
