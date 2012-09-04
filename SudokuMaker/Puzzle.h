@@ -1,7 +1,8 @@
 #pragma once
 #include "stdafx.h"
-#include <memory>
 #include <deque>
+#include <memory>
+#include <vector>
 
 #include "SolverConstants.h"
 
@@ -89,6 +90,10 @@ public:
     // @returns false if found conflicts, true if
     //          there were no conflicts.
     bool EliminateImpossiblePencilMarks();
+
+    bool EliminateImpossiblePencilMarks(const std::vector<int>& modifiedCells);
+
+    bool EliminateImpossiblePencilMarks(int modifiedCellPosition);
 
     void Load(const UCHAR* board);
 	

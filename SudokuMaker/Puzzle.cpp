@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <bitset>
 #include <deque>
+#include <vector>
 
 #include "Puzzle.h"
 
@@ -153,26 +154,34 @@ Puzzle::Puzzle(Puzzle&& other) {
 }
 
 bool Puzzle::EliminateImpossiblePencilMarks() {
-    // For each solved cell, eliminate the cell's value
-    // in each row, column and 3x3 segment.
-    std::deque<int> solvedCells;
-    
-    // Start with the cells that are currently solved.
-    // Cells that will be solved while eliminating pencil marks
-    // will be added later.
+    // Examine the effect of all solved cells on unsolved cells.
+    std::vector<int> solvedCells;
+    solvedCells.reserve(kNumCells);
+
     for (int i = 0; i < kNumCells; i++) {
         if (Cells[i].IsSolved()) {
             solvedCells.push_back(i);
         }
     }
 
+    return EliminateImpossiblePencilMarks(solvedCells);
+}
+
+bool Puzzle::EliminateImpossiblePencilMarks(const std::vector<int>& modifiedCells) {
+    // For each solved cell, eliminate the cell's value
+    // in each row, column and 3x3 segment.
+    std::deque<int> solvedCells;
+    
+    // Start with the cells that have been provided.
+    // Cells that will be solved while eliminating pencil marks
+    // will be added later.
+    for (auto cellPosition : modifiedCells) {
+        solvedCells.push_back(cellPosition);
+    }
+
     while (!solvedCells.empty()) {
         int cellPosition = solvedCells.front();
         solvedCells.pop_front();
-
-        if (cellPosition == 72) {
-            int x = 2;
-        }
 
         auto solvedCell = Cells[cellPosition];
         auto value = solvedCell.PencilMarks();
@@ -223,6 +232,12 @@ bool Puzzle::EliminateImpossiblePencilMarks() {
     }
 
     return true;
+}
+
+bool Puzzle::EliminateImpossiblePencilMarks(int solvedCellPosition) {
+    std::vector<int> solvedCells;
+    solvedCells.push_back(solvedCellPosition);
+    return EliminateImpossiblePencilMarks(solvedCells);
 }
 
 void Puzzle::Load(const UCHAR* board) {
