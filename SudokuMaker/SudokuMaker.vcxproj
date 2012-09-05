@@ -84,6 +84,7 @@
     <None Include="SudokuMaker.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Generator.h" />
     <ClInclude Include="Puzzle.h" />
     <ClInclude Include="SolverConstants.h" />
     <ClInclude Include="Solvers.h" />
@@ -100,6 +101,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Generator.cpp" />
     <ClCompile Include="Puzzle.cpp" />
     <ClCompile Include="Solvers.cpp" />
     <ClCompile Include="stdafx.cpp">

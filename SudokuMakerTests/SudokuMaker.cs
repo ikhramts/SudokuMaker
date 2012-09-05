@@ -17,6 +17,10 @@ namespace SudokuMakerTests {
 
         [DllImport("SudokuMaker.dll")]
         [return: MarshalAs(UnmanagedType.I1)]
+        public extern static bool HasUniqueSolution(byte[] board);
+
+        [DllImport("SudokuMaker.dll")]
+        [return: MarshalAs(UnmanagedType.I1)]
         public extern static bool IsBoardValid(byte[] board);
 
         [DllImport("SudokuMaker.dll")]

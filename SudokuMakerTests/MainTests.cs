@@ -79,5 +79,24 @@ namespace SudokuMakerTests {
                 }
             }
         }
+
+        [Test]
+        [TestCase("EmptyBoard", false)]
+        [TestCase("Puzzle1", true)]
+        [TestCase("Solution1", true)]
+        [TestCase("Puzzle2", true)]
+        [TestCase("Solution2", true)]
+        [TestCase("Solution2", true)]
+        [TestCase("Incorrect_DuplicateColumn1", false)]
+        [TestCase("Incorrect_DuplicateColumn2", false)]
+        [TestCase("Incorrect_DuplicateRow1", false)]
+        [TestCase("Incorrect_DuplicateRow2", false)]
+        [TestCase("Incorrect_DuplicateSegment1", false)]
+        [TestCase("Puzzle1_AlmostSolved", true)]
+        public void HasUniqueSolution(string puzzleName, bool expected) {
+            var puzzle = Boards.LoadBoard(puzzleName);
+            var hasUniqueSolution = SudokuMaker.HasUniqueSolution(puzzle);
+            Assert.AreEqual(expected, hasUniqueSolution);
+        }
     }
 }

@@ -1,6 +1,7 @@
 LIBRARY
 EXPORTS
 	FindPuzzleDifficulty
+	HasUniqueSolution
 	IsBoardValid
 	IsSolution
 	MakeSudoku

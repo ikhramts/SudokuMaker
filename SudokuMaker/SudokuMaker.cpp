@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "SudokuMaker.h"
+#include "Generator.h"
 #include "Puzzle.h"
 #include "Solvers.h"
 
@@ -11,6 +12,13 @@ namespace sudoku_maker {
     // Assign a difficulty level to a sudoku puzzle.
     SolutionOutcome FindPuzzleDifficulty(const SudokuCell* puzzle, SolutionStrategy& difficulty) {
         return SOLUTION_OK;
+    }
+
+    // Check whether a puzzle has a unique solution.
+    // Returns false if a solution does not exist or is not unique.
+    bool HasUniqueSolution(const SudokuCell* puzzle) {
+        PuzzlePtr puzzleBoard(new Puzzle(puzzle));
+        return HasUniqueSolution(puzzleBoard);
     }
 
     // Check whether a solution is valid.

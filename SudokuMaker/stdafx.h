@@ -11,5 +11,10 @@
 // Windows Header Files:
 #include <windows.h>
 
+// STL libraries.
 #include <array>
+#include <deque>
+#include <memory>
+#include <random>
+#include <vector>
 
